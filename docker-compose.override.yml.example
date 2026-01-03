@@ -1,0 +1,11 @@
+services:
+  server:
+    volumes:
+      # Mount your workspace directory to /projects inside the container
+      # Example: mount your local /workspace to /projects inside the container
+      - /Users/webdevcody/Workspace/automakeit-workspace:/projects:rw
+    environment:
+      # Set root directory for all projects and file operations
+      # Users can only create/open projects within this directory
+      - ALLOWED_ROOT_DIRECTORY=/projects
+      - NODE_ENV=development

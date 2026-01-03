@@ -1,0 +1,19 @@
+{
+  "files": {
+    "app_spec.txt": {
+      "description": "Project architecture documentation (auto-synced from multi-agent analysis)"
+    },
+    "LAUNCH_GUIDE.md": {
+      "description": "Quick start guide for launching the AutoMakeIt application with multiple options (automated scripts, simple scripts, or manual terminal setup), including instructions for accessing the application locally or over LAN, troubleshooting common issues, and verifying that backend and frontend services are running on ports 3008 and 3007 respectively."
+    },
+    "CHANGELOG_RATE_LIMIT_HANDLING.md": {
+      "description": "Documentation of improved rate limit error handling implementation across the Claude Agent SDK, including error classification utilities, enhanced API provider error messages, and test coverage for detecting and managing 429 rate limit errors. This context is useful for understanding how the system handles API rate limiting, debugging rate limit-related issues, or implementing future automatic retry logic and concurrency management features."
+    },
+    "CLAUDE.md": {
+      "description": "Configuration and guidance document for Claude Code when working with the AutoMakeIt monorepo project, including architecture overview, common commands, import conventions, security practices, and key development patterns. This file serves as context for AI agents to understand the project structure, technology stack, and implementation guidelines when implementing features or fixes."
+    },
+    "NETWORK_ACCESS.md": {
+      "description": "Configuration guide for accessing the AutoMakeIt backend server from devices on the same private network, including automatic network detection, manual CORS setup, security restrictions to private IP ranges, and troubleshooting steps for connection and CORS issues."
+    }
+  }
+}

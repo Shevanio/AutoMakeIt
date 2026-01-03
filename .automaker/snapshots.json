@@ -1,0 +1,11 @@
+[
+  {
+    "featureId": "feature-1767365169410-wpay3d3tk",
+    "commitHash": "e6d48fb3aec4f215a94a3727ca67db4a8664559e",
+    "worktreePath": "/home/shevanio/dev/automaker",
+    "branch": "ShevanioBranch",
+    "createdAt": "2026-01-02T14:46:11.987Z",
+    "status": "completed",
+    "description": "Snapshot before executing feature feature-1767365169410-wpay3d3tk"
+  }
+]

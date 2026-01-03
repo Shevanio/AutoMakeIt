@@ -1,0 +1,321 @@
+# App Specification Analysis
+
+## Overview
+
+Analyze this project and create a comprehensive specification covering all aspects of the application.
+
+## Documentation Summary
+
+- **Components Documented**: 11
+- **Analysis Coverage**: 6/6 agents
+
+## Architecture Components
+
+The following 11 components and systems document the current application architecture:
+
+### 1. File-Based JSON Storage Architecture 🗄️
+
+**Documentation**: The application implements a file-based JSON storage system without any relational or NoSQL database. All persistent data is stored as JSON files in designated directory structures: global settings/credentials in DATA_DIR/*.json (apps/server/src/services/settings-service.ts), per-project settings in {projectPath}/.automaker/settings.json, features in {projectPath}/.automaker/features/{featureId}/feature.json (apps/server/src/services/feature-loader.ts), validation cache in {projectPath}/.automaker/validations/{issueNumber}/validation.json (apps/server/src/lib/validation-storage.ts), and worktree metadata in {projectPath}/.automaker/worktrees/{branch}/worktree.json (apps/server/src/lib/worktree-metadata.ts). Atomic writes are implemented via temp-file-then-rename pattern (write to .tmp file, then fs.rename) to prevent corruption during concurrent access. The system uses secure-fs wrapper for all I/O operations and deep-merges partial updates for nested objects like keyboardShortcuts and apiKeys.
+
+**Implementation Files**:
+- `apps/server/src/services/settings-service.ts`
+- `apps/server/src/services/feature-loader.ts`
+- `apps/server/src/lib/validation-storage.ts`
+- `apps/server/src/lib/worktree-metadata.ts`
+
+**Technical Notes**:
+Node.js fs module, JSON.parse/stringify, secure-fs wrapper
+
+---
+
+### 2. Express REST API with Multi-Mode Authentication & WebSocket Streaming ⚙️
+
+**Documentation**: The backend implements a comprehensive Express 5 REST API (apps/server/src/index.ts) with dual-mode authentication supporting both Electron (X-API-Key header) and web (HTTP-only session cookies) modes. API keys are generated via crypto.randomUUID() and persisted to DATA_DIR/.api-key with 0o600 permissions, while session tokens use crypto.randomBytes(32) and persist to DATA_DIR/.sessions for server restart recovery. Security is enforced through CORS origin whitelisting (localhost/private IPs only), express-rate-limit (1000 req/15min general, 50 req/15min for AI endpoints), Content-Type validation middleware (requireJsonContentType), and crypto.timingSafeEqual for timing-safe API key comparison. Real-time events stream via WebSocket at /api/events with 50ms batching, supporting both standard auth and ephemeral wsToken (5min expiry). The API exposes 20+ route modules including /api/agent (AI conversations), /api/auto-mode (autonomous feature implementation), /api/fs (filesystem operations), /api/terminal (PTY WebSocket), /api/github, /api/mcp, and /api/settings. All routes except /api/health and /api/auth require authentication via authMiddleware.
+
+**Implementation Files**:
+- `apps/server/src/index.ts`
+- `apps/server/src/lib/auth.ts`
+- `apps/server/src/middleware/require-json-content-type.ts`
+- `apps/server/src/lib/events.ts`
+- `apps/server/src/services/agent-service.ts`
+
+**Technical Notes**:
+express@^5.2.1, ws@^8.18.3, express-rate-limit@^7.5.1, cookie-parser@^1.4.7, cors@^2.8.5, morgan@^1.10.1
+
+---
+
+### 3. Claude Agent SDK Integration with Multi-Provider Support & Session Persistence ⚙️
+
+**Documentation**: The backend orchestrates AI agent interactions through AgentService (apps/server/src/services/agent-service.ts), which manages conversation sessions with message history persisted to DATA_DIR/agent-sessions/{sessionId}.json and metadata in sessions-metadata.json. The service integrates Claude Agent SDK via ProviderFactory pattern, supporting model-specific providers while maintaining SDK session continuity via sdkSessionId field. Each agent session includes a prompt queue system for chaining tasks, AbortController for cancellation, and streaming responses via EventEmitter events (agent:stream, agent:error, agent:complete). Context loading is configurable via autoLoadClaudeMd setting, with CLAUDE.md filtering to avoid duplication when SDK handles settingSources. MCP (Model Context Protocol) server integration is configured via settingsService with mcpAutoApproveTools and mcpUnrestrictedTools permission controls. Image attachments are supported via base64 encoding with buildPromptWithImages utility.
+
+**Implementation Files**:
+- `apps/server/src/services/agent-service.ts`
+- `apps/server/src/providers/provider-factory.ts`
+- `apps/server/src/lib/sdk-options.ts`
+- `apps/server/src/lib/settings-helpers.ts`
+- `apps/server/src/routes/agent/index.ts`
+
+**Technical Notes**:
+@anthropic-ai/claude-agent-sdk@^0.1.72, @modelcontextprotocol/sdk@^1.25.1, @automaker/utils, @automaker/prompts
+
+---
+
+### 4. React Frontend Architecture with Zustand State & TanStack Router 🎨
+
+**Documentation**: The UI is built with React 19 using TanStack Router for file-based routing (/routes/*.tsx) and Zustand for global state management via app-store.ts and setup-store.ts with localStorage persistence. The application implements a dual-mode architecture supporting both Electron desktop and web browser environments, with authentication handled differently in each mode (IPC headers for Electron, HTTP session cookies for web). The component library uses Radix UI primitives (Dialog, Dropdown, Select, etc.) wrapped with Tailwind CSS via class-variance-authority for consistent styling, and the app supports 15+ theme modes including system, dark, light, and custom themes (dracula, nord, monokai, etc.) applied via CSS classes on documentElement.
+
+**Implementation Files**:
+- `apps/ui/src/routes/__root.tsx`
+- `apps/ui/src/store/app-store.ts`
+- `apps/ui/src/store/setup-store.ts`
+- `apps/ui/src/app.tsx`
+- `apps/ui/src/components/ui/dialog.tsx`
+
+**Technical Notes**:
+react@19.2.3, @tanstack/react-router@^1.141.6, zustand@^5.0.9, @radix-ui/react-dialog@^1.1.15, @radix-ui/react-dropdown-menu@^2.1.16, class-variance-authority@^0.7.1, tailwindcss@^4.1.18
+
+---
+
+### 5. Component Architecture & User Interaction Patterns 🎨
+
+**Documentation**: The application uses a modular component architecture with feature-based organization under /components/views/ (board-view, settings-view, terminal-view, etc.), each containing dedicated hooks/, dialogs/, and components/ subdirectories. User interactions are managed through custom hooks (use-keyboard-shortcuts, use-board-drag-drop, use-project-picker) with keyboard shortcuts configurable via app-store (DEFAULT_KEYBOARD_SHORTCUTS) supporting context-specific hotkeys (e.g., 'N' for different actions in board/agent/profiles views). The UI implements @dnd-kit/core for drag-and-drop kanban functionality, FileBrowserProvider context for promisified file dialogs, and uses sonner for toast notifications. State is colocated per view: board-view uses custom hooks for persistence, drag-drop, and background settings; terminal-view manages xterm.js instances; settings-view handles API key management.
+
+**Implementation Files**:
+- `apps/ui/src/contexts/file-browser-context.tsx`
+- `apps/ui/src/components/layout/sidebar/hooks/use-navigation.ts`
+- `apps/ui/src/components/views/board-view/hooks/use-board-keyboard-shortcuts.ts`
+- `apps/ui/src/hooks/use-keyboard-shortcuts.ts`
+- `apps/ui/package.json`
+
+**Technical Notes**:
+@dnd-kit/core@^6.3.1, @dnd-kit/sortable@^10.0.0, @xterm/xterm@^5.5.0, sonner@^2.0.7, @xyflow/react@^12.10.0, usehooks-ts@^3.1.1
+
+---
+
+### 6. Authentication & Authorization System 🔒
+
+**Documentation**: The application implements a dual-mode authentication architecture supporting both Electron (API key headers) and Web (session cookies with persistent storage). API keys are generated using crypto.randomUUID() and stored in DATA_DIR/.api-key with 0o600 permissions, with timing-safe comparison via crypto.timingSafeEqual() to prevent timing attacks. Sessions persist to disk (DATA_DIR/.sessions) for recovery across restarts, with HTTP-only, SameSite=strict cookies providing CSRF protection. WebSocket connections use ephemeral single-use tokens with 5-minute expiry. Login endpoints implement IP-based rate limiting (5 attempts per minute) to prevent brute force attacks.
+
+**Implementation Files**:
+- `apps/server/src/lib/auth.ts`
+- `apps/server/src/routes/auth/index.ts`
+- `apps/server/src/index.ts`
+
+**Technical Notes**:
+express@^5.0.0, cookie-parser@^1.4.6, crypto.timingSafeEqual, crypto.randomBytes
+
+---
+
+### 7. Path Traversal Prevention & Input Sanitization 🔒
+
+**Documentation**: The application implements defense-in-depth against path traversal attacks through validatePath() middleware and sanitizeFilename() utilities. ALLOWED_ROOT_DIRECTORY environment variable restricts filesystem access to approved directories, with DATA_DIR as an exception for settings/credentials. The sanitizeFilename() function removes null bytes, path separators, '..' sequences, and drive letters to prevent directory traversal. Path validation uses path.relative() and path.isAbsolute() checks to detect '..' traversal attempts. Request logging automatically sanitizes API keys, bearer tokens, JWT tokens, passwords, and authorization headers using regex patterns before logging.
+
+**Implementation Files**:
+- `libs/platform/src/security.ts`
+- `apps/server/src/middleware/validate-paths.ts`
+- `libs/utils/src/logger.ts`
+
+**Technical Notes**:
+express@^5.0.0, path.relative, path.resolve, regex-based sanitization
+
+---
+
+### 8. Multi-Layer Testing Infrastructure with Vitest & Playwright 🧪
+
+**Documentation**: The application implements a comprehensive three-tier testing strategy: unit tests (Vitest with v8 coverage), integration tests (real git operations with temporary repos), and E2E tests (Playwright with mock agent mode). Unit tests reside in apps/server/tests/unit and libs/*/tests with extensive vi.mock usage for isolating dependencies (child_process, fs, net). E2E tests in apps/ui/tests use a modular utility library organized by domain (components/, features/, views/, project/) to enable DRY test composition. The Playwright setup spawns both backend (port 3008) and frontend (port 3007) dev servers with AUTOMAKER_MOCK_AGENT=true to bypass real Claude API calls during CI. Coverage thresholds enforce 60% lines, 75% functions, 55% branches with explicit exclusions for routes/middleware (integration-test only). Integration tests use real git commands via execAsync and temporary directories cleaned up in afterEach hooks.
+
+**Implementation Files**:
+- `apps/server/vitest.config.ts`
+- `apps/ui/playwright.config.ts`
+- `apps/server/tests/unit/services/dev-server-service.test.ts`
+- `apps/server/tests/integration/routes/worktree/create.integration.test.ts`
+- `apps/ui/tests/features/feature-manual-review-flow.spec.ts`
+- `apps/ui/tests/utils/index.ts`
+
+**Technical Notes**:
+vitest@^2.1.8, @playwright/test@^1.49.1, @vitest/coverage-v8@^2.1.8
+
+---
+
+### 9. Test Utilities & Mock Strategies 🧪
+
+**Documentation**: The E2E test suite relies on a sophisticated utility library (apps/ui/tests/utils/) with 25+ helper modules organized by concern: core (waiting, interactions, elements), views (board, agent, settings), components (modals, toasts, autocomplete), and features (kanban, skip-tests, timers). Server unit tests use vi.mock() extensively to stub external dependencies like child_process.spawn, fs/promises, and net.createServer with EventEmitter-based mock processes. The authenticateForTests() helper injects AUTOMAKER_API_KEY='test-api-key-for-e2e-tests' into requests, while global-setup.ts handles session initialization. Mock strategies include timing-safe comparison testing, port availability simulation, and package manager detection (npm/yarn/pnpm/bun via lockfile presence). Integration tests prefer real filesystem operations with tmpdir cleanup over mocks.
+
+**Implementation Files**:
+- `apps/ui/tests/utils/core/waiting.ts`
+- `apps/ui/tests/utils/project/setup.ts`
+- `apps/server/tests/utils/mocks.ts`
+- `apps/server/tests/utils/helpers.ts`
+
+**Technical Notes**:
+vitest@^2.1.8, @playwright/test@^1.49.1, node:events, node:child_process
+
+---
+
+### 10. Multi-Stage Docker Containerization & CI/CD Pipeline 🚀
+
+**Documentation**: The application uses a sophisticated multi-stage Dockerfile enabling parallel builds for server (Node.js Alpine with embedded Claude CLI, GitHub CLI, and non-root user) and UI (Nginx Alpine for static assets). Docker Compose orchestrates isolated deployment with named volumes (automaker-data) preventing host filesystem access. GitHub Actions workflows implement multi-platform release builds (ubuntu/macos/windows) triggered on release tags, with artifact upload to GitHub Releases. CI pipelines run on PR/push with unit tests (vitest + coverage), E2E tests (Playwright with headless Chromium), build verification (build:electron:dir), and lockfile validation. The server container includes health checks (curl localhost:3008/api/health every 30s) and runs as uid 1001 for security.
+
+**Implementation Files**:
+- `Dockerfile`
+- `docker-compose.yml`
+- `.github/workflows/release.yml`
+- `.github/workflows/pr-check.yml`
+- `.github/workflows/test.yml`
+- `.github/workflows/e2e-tests.yml`
+- `apps/server/src/config/env.ts`
+
+**Technical Notes**:
+docker, docker-compose, github-actions, nginx:alpine, node:22-alpine, playwright, vitest
+
+---
+
+### 11. Environment Configuration & Security Model 🚀
+
+**Documentation**: Configuration is centralized in apps/server/src/config/env.ts using a singleton pattern (getServerConfig) with lazy loading and validation. Environment variables control critical security boundaries: ALLOWED_ROOT_DIRECTORY restricts filesystem access to a sandboxed directory, AUTOMAKER_API_KEY enables optional X-API-Key header authentication, CORS_ORIGIN controls cross-origin access, and TERMINAL_MAX_SESSIONS limits concurrent shell sessions. The system supports dual deployment modes (Electron with IPC vs web with Docker isolation). Configuration includes model overrides (AUTOMAKER_MODEL_SPEC, AUTOMAKER_MODEL_CHAT, etc.) for development flexibility and ENABLE_REQUEST_LOGGING for debugging. No database is used - state persists to DATA_DIR as flat files (.api-key, .sessions).
+
+**Implementation Files**:
+- `apps/server/src/config/env.ts`
+- `apps/server/.env.example`
+- `docker-compose.yml`
+
+**Technical Notes**:
+node:crypto, express@^5.0.0, ws@^8.18.0
+
+---
+
+## Agent Insights
+
+Detailed analysis from each specialized agent:
+
+### 🎨 Frontend Agent
+
+**Architectural Insights**:
+- 💡 The dual Electron/Web mode architecture creates split authentication flows: Electron uses IPC-based header injection (isElectronMode check) while web mode relies on HTTP-only session cookies with verifySession() checks, centralizing auth logic in __root.tsx but requiring mode-specific handling throughout the codebase
+- 💡 Keyboard shortcuts use a context-aware design where the same key ('N') triggers different actions depending on the active view (addFeature in board, newSession in agent, addProfile in profiles), with shortcuts stored as platform-agnostic strings ('Cmd+K') then parsed and formatted to OS-specific symbols (⌘ on Mac, ⊞ on Windows) at runtime
+- 💡 The FileBrowserProvider implements a promisified dialog pattern using React Context + Promise-based resolution, allowing imperative file selection (await openFileBrowser()) from anywhere in the component tree while maintaining declarative React paradigms
+- 💡 State management splits between Zustand (app-store.ts for global app state, setup-store.ts for onboarding) and local hooks (use-board-persistence, use-worktrees) with persistence middleware syncing to localStorage/file storage, creating a hybrid architecture where global state is centralized but view-specific state is colocated
+
+**Current Dependencies**:
+- react@19.2.3
+- react-dom@19.2.3
+- @tanstack/react-router@^1.141.6
+- zustand@^5.0.9
+- @radix-ui/react-dialog@^1.1.15
+- @radix-ui/react-dropdown-menu@^2.1.16
+- @radix-ui/react-checkbox@^1.3.3
+- @radix-ui/react-collapsible@^1.1.12
+- @radix-ui/react-popover@^1.1.15
+- @radix-ui/react-select@^2.2.6
+- @radix-ui/react-slider@^1.3.6
+- @radix-ui/react-tabs@^1.1.13
+- @radix-ui/react-tooltip@^1.2.8
+- @dnd-kit/core@^6.3.1
+- @dnd-kit/sortable@^10.0.0
+- class-variance-authority@^0.7.1
+- tailwind-merge@^3.4.0
+- sonner@^2.0.7
+- @xterm/xterm@^5.5.0
+- @xyflow/react@^12.10.0
+- lucide-react@^0.562.0
+- react-markdown@^10.1.0
+- usehooks-ts@^3.1.1
+
+
+### ⚙️ Backend Agent
+
+**Architectural Insights**:
+- 💡 Session persistence to disk (both auth sessions in .sessions and agent conversations in agent-sessions/*.json) enables full recovery across server restarts, distinguishing this architecture from typical in-memory session stores
+- 💡 The authentication system uses crypto.timingSafeEqual for API key validation to prevent timing attacks - a security-conscious choice rarely seen in internal tools
+- 💡 WebSocket event batching (50ms window) with urgent event bypass (error types) optimizes network traffic while ensuring critical notifications arrive immediately, preventing UI lag during high-frequency agent tool use
+- 💡 The SDK session continuity system (sdkSessionId field) bridges Express HTTP session management with Claude SDK's conversation state, enabling multi-turn conversations that survive both client and server restarts
+
+**Current Dependencies**:
+- express@^5.2.1
+- ws@^8.18.3
+- express-rate-limit@^7.5.1
+- cookie-parser@^1.4.7
+- cors@^2.8.5
+- morgan@^1.10.1
+- @anthropic-ai/claude-agent-sdk@^0.1.72
+- @modelcontextprotocol/sdk@^1.25.1
+- node-pty@1.1.0-beta41
+- dotenv@^17.2.3
+
+
+### 🗄️ Database Agent
+
+**Architectural Insights**:
+- 💡 The storage architecture deliberately avoids database dependencies by using filesystem-based JSON storage with atomic write operations (temp-file-then-rename pattern) to ensure consistency without introducing transactional overhead or external database dependencies
+- 💡 Feature isolation is achieved through per-feature directories ({projectPath}/.automaker/features/{featureId}/) where each feature.json is completely independent, enabling parallel feature development without schema coordination or migration complexity
+- 💡 Validation results are cached with 24-hour TTL (VALIDATION_CACHE_TTL_HOURS) and include validatedAt timestamps for staleness detection, reducing redundant GitHub API calls while allowing invalidation of outdated cached data
+- 💡 Branch name sanitization (sanitizeBranchName in worktree-metadata.ts) handles cross-platform filesystem restrictions by replacing invalid characters (/\:*?"<>|), handling Windows reserved names (CON, PRN, AUX), and truncating to 200 characters to prevent path length issues
+
+**Current Dependencies**:
+- Node.js fs/promises (via secure-fs wrapper)
+- path module for cross-platform path handling
+
+
+### 🔒 Security Agent
+
+**Architectural Insights**:
+- 💡 The dual authentication system separates API key generation (persistent to disk) from session management (also persistent), allowing the server to recover authentication state across restarts without requiring users to re-authenticate
+- 💡 CORS origins are validated against a whitelist allowing only localhost and private network IPs (192.168.x.x, 10.x.x.x, 172.16-31.x.x) to prevent drive-by RCE attacks from malicious websites, since MCP server endpoints can execute arbitrary commands
+- 💡 Rate limiting is implemented with two tiers: general (1000 req/15min) for all endpoints and strict (50 req/15min) for AI agent endpoints, with exemptions for essential read operations to prevent UI blocking
+- 💡 The authentication system uses multiple fallback mechanisms (X-API-Key header, X-Session-Token header, apiKey query param, session cookie) to support different client scenarios including Electron IPC, browser cookies, and explicit token-based auth
+
+**Current Dependencies**:
+- express@^5.0.0
+- cors@^2.8.5
+- express-rate-limit@^7.4.1
+- cookie-parser@^1.4.6
+- ws@^8.18.0
+- crypto.timingSafeEqual
+- crypto.randomBytes
+- crypto.randomUUID
+
+
+### 🧪 Testing Agent
+
+**Architectural Insights**:
+- 💡 The testing architecture separates concerns by test type: routes/middleware explicitly excluded from unit coverage (lines 17-19 in vitest.config.ts) because they require integration tests with real HTTP servers
+- 💡 E2E tests use workers: 1 (sequential execution) to avoid auth conflicts with shared server state, indicating session-based authentication creates resource contention that prevents parallelization
+- 💡 Mock agent mode (AUTOMAKER_MOCK_AGENT=true) is mandatory for all E2E tests to bypass rate limiting and avoid real Claude API costs, showing production API integration is not tested end-to-end
+- 💡 Integration tests use real git commands (git init, git worktree, git log) with temporary repositories instead of mocking git operations, prioritizing real-world behavior validation over isolation speed
+
+**Current Dependencies**:
+- vitest@^2.1.8
+- @vitest/coverage-v8@^2.1.8
+- @playwright/test@^1.49.1
+- node:child_process
+- node:fs/promises
+- node:net
+
+
+### 🚀 DevOps Agent
+
+**Architectural Insights**:
+- 💡 The multi-stage Docker build separates server and UI into independent targets, enabling selective deployment (docker build --target server) and parallel CI builds while sharing a common base layer for dependency caching efficiency
+- 💡 The Docker security model enforces complete host filesystem isolation using named volumes only - ALLOWED_ROOT_DIRECTORY restricts access within the container (/projects), not the host, preventing any lateral movement to host files
+- 💡 GitHub Actions release workflow extracts version from git tags (v1.2.3 -> 1.2.3), dynamically updates package.json via update-version.mjs script, builds for 3 platforms (ubuntu/macos/windows) in parallel, then uploads artifacts to GitHub Releases in a separate job
+- 💡 Health checks use curl (pre-installed for gh CLI credential helper) instead of busybox wget, with 30s interval and 5s start period to tolerate slow container startup on resource-constrained systems
+
+**Current Dependencies**:
+- docker
+- docker-compose
+- node:22-alpine
+- nginx:alpine
+- github-cli@2.63.2
+- @anthropic-ai/claude-code
+- playwright
+- vitest
+- husky@^9.1.7
+- prettier@^3.7.4
+- concurrently@^9.1.2
+
+
+## Analysis Metadata
+
+- **Started**: 2/1/2026, 22:57:57
+- **Completed**: 2/1/2026, 23:03:42
+- **Total Duration**: 345 seconds

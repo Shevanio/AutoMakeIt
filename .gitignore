@@ -1,0 +1,86 @@
+#added by trueheads > will remove once supercombo adds multi-os support
+# Removed launch.sh from gitignore - now using official launch scripts
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.turbo/
+
+# AutoMakeIt
+.automakeit/images/
+.automakeit/
+/.automakeit/*
+/.automakeit/
+
+.worktrees/
+
+/logs
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE/Editor configs
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Editor backup/temp files
+*~
+*.bak
+*.backup
+*.orig
+*.swp
+*.swo
+*.tmp
+*.temp
+
+# Local settings (user-specific)
+*.local.json
+
+# Application state/backup
+backup.json
+
+# Test artifacts
+test-results/
+coverage/
+.nyc_output/
+*.lcov
+playwright-report/
+blob-report/
+
+# Environment files (keep .example)
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.local.example
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+*.pem
+
+docker-compose.override.yml
+.claude/docker-compose.override.yml
+
+pnpm-lock.yaml
+yarn.lock
