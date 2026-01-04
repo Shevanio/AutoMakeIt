@@ -15,6 +15,13 @@ import type { Request, Response, NextFunction } from 'express';
 // HTTP methods that typically include request bodies
 const METHODS_REQUIRING_JSON = ['POST', 'PUT', 'PATCH'];
 
+// Paths that should be excluded from JSON Content-Type requirement
+// These endpoints may be called without a body or with different content types
+// NOTE: Express strips the router prefix, so '/api/auth/logout' becomes '/auth/logout'
+const EXCLUDED_PATHS = [
+  '/auth/logout', // Logout can be called without body
+];
+
 /**
  * Middleware that requires Content-Type: application/json for POST/PUT/PATCH requests
  *
@@ -25,10 +32,17 @@ const METHODS_REQUIRING_JSON = ['POST', 'PUT', 'PATCH'];
  * Allows requests to pass through if:
  * - The request method is GET, DELETE, OPTIONS, HEAD, etc.
  * - OR the Content-Type is properly set to application/json (with optional charset)
+ * - OR the path is in the excluded list
  */
 export function requireJsonContentType(req: Request, res: Response, next: NextFunction): void {
   // Skip validation for methods that don't require a body
   if (!METHODS_REQUIRING_JSON.includes(req.method)) {
+    next();
+    return;
+  }
+
+  // Skip validation for excluded paths
+  if (EXCLUDED_PATHS.some((path) => req.path === path || req.url === path)) {
     next();
     return;
   }
