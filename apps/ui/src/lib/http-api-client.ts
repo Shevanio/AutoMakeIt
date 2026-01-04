@@ -154,6 +154,11 @@ export const login = async (
         };
       }
       console.log('[HTTP Client] Login verified successfully');
+
+      // Connect WebSocket now that we're authenticated
+      const client = getHttpApiClient();
+      client.connect();
+      console.log('[HTTP Client] WebSocket connection initiated after login');
     }
 
     return data;
@@ -209,6 +214,11 @@ export const logout = async (): Promise<{ success: boolean }> => {
     // Clear the cached session token
     clearSessionToken();
     console.log('[HTTP Client] Session token cleared on logout');
+
+    // Disconnect WebSocket
+    const client = getHttpApiClient();
+    client.disconnect();
+    console.log('[HTTP Client] WebSocket disconnected on logout');
 
     return await response.json();
   } catch (error) {
@@ -296,7 +306,8 @@ export class HttpApiClient implements ElectronAPI {
 
   constructor() {
     this.serverUrl = getServerUrl();
-    this.connectWebSocket();
+    // Don't connect WebSocket in constructor - wait until after authentication
+    // Call connect() explicitly after login or session verification
   }
 
   /**
@@ -335,6 +346,32 @@ export class HttpApiClient implements ElectronAPI {
       console.error('[HttpApiClient] Error fetching wsToken:', error);
       return null;
     }
+  }
+
+  /**
+   * Connect to the WebSocket server.
+   * This should be called after successful authentication (login or session verification).
+   * In Electron mode, this can be called immediately as API key is available.
+   */
+  public connect(): void {
+    this.connectWebSocket();
+  }
+
+  /**
+   * Disconnect from the WebSocket server.
+   * This should be called on logout or when the session is invalidated.
+   */
+  public disconnect(): void {
+    if (this.ws) {
+      console.log('[HttpApiClient] Disconnecting WebSocket');
+      this.ws.close();
+      this.ws = null;
+    }
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    this.isConnecting = false;
   }
 
   private connectWebSocket(): void {

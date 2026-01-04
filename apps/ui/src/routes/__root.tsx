@@ -9,7 +9,7 @@ import {
 import { useAppStore } from '@/store/app-store';
 import { useSetupStore } from '@/store/setup-store';
 import { getElectronAPI } from '@/lib/electron';
-import { initApiKey, isElectronMode, verifySession } from '@/lib/http-api-client';
+import { initApiKey, isElectronMode, verifySession, getHttpApiClient } from '@/lib/http-api-client';
 import { Toaster } from 'sonner';
 import { ThemeOption, themeOptions } from '@/config/theme-options';
 
@@ -86,6 +86,8 @@ function RootLayoutContent() {
         if (isElectronMode()) {
           setIsAuthenticated(true);
           setAuthChecked(true);
+          // Connect WebSocket for Electron mode (API key is available)
+          getHttpApiClient().connect();
           return;
         }
 
@@ -96,6 +98,9 @@ function RootLayoutContent() {
         if (isValid) {
           setIsAuthenticated(true);
           setAuthChecked(true);
+          // Connect WebSocket now that session is verified
+          getHttpApiClient().connect();
+          console.log('[Root] WebSocket connection initiated after session verification');
           return;
         }
 
