@@ -109,14 +109,15 @@ function RootLayoutContent() {
         setIsAuthenticated(false);
         setAuthChecked(true);
 
-        if (location.pathname !== '/login') {
+        // Don't redirect if we're on setup or login page (avoid redirect loops)
+        if (location.pathname !== '/login' && location.pathname !== '/setup') {
           navigate({ to: '/login' });
         }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
         setAuthChecked(true);
-        // On error, redirect to login to be safe
-        if (location.pathname !== '/login') {
+        // On error, redirect to login to be safe (but not if on setup)
+        if (location.pathname !== '/login' && location.pathname !== '/setup') {
           navigate({ to: '/login' });
         }
       }
@@ -215,6 +216,15 @@ function RootLayoutContent() {
     );
   }
 
+  // Show setup page (full screen, no sidebar, no auth required)
+  if (isSetupRoute) {
+    return (
+      <main className="h-screen overflow-hidden" data-testid="app-container">
+        <Outlet />
+      </main>
+    );
+  }
+
   // Wait for auth check before rendering protected routes (web mode only)
   if (!isElectronMode() && !authChecked) {
     return (
@@ -227,14 +237,6 @@ function RootLayoutContent() {
   // Redirect to login if not authenticated (web mode)
   if (!isElectronMode() && !isAuthenticated) {
     return null; // Will redirect via useEffect
-  }
-
-  if (isSetupRoute) {
-    return (
-      <main className="h-screen overflow-hidden" data-testid="app-container">
-        <Outlet />
-      </main>
-    );
   }
 
   return (
