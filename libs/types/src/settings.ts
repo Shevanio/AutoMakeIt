@@ -447,6 +447,10 @@ export interface ProjectSettings {
   /** Project theme (undefined = use global setting) */
   theme?: ThemeMode;
 
+  // QA Validation Configuration
+  /** QA loop configuration for this project */
+  qaValidation?: import('./qa-validation.js').QAValidationConfig;
+
   // Worktree Management
   /** Project-specific worktree preference override */
   useWorktrees?: boolean;

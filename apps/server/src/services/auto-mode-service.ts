@@ -41,6 +41,7 @@ import { FeatureLoader } from './feature-loader.js';
 import type { SettingsService } from './settings-service.js';
 import { pipelineService, PipelineService } from './pipeline-service.js';
 import { getSnapshotService } from './snapshot-service.js';
+import { QAService } from './qa-service.js';
 import {
   getAutoLoadClaudeMdSetting,
   getEnableSandboxModeSetting,
@@ -231,10 +232,12 @@ export class AutoModeService {
   private pendingApprovals = new Map<string, PendingApproval>();
   private planApprovalLocks = new Set<string>(); // Mutex for plan approval operations
   private settingsService: SettingsService | null = null;
+  private qaService: QAService;
 
   constructor(events: EventEmitter, settingsService?: SettingsService) {
     this.events = events;
     this.settingsService = settingsService ?? null;
+    this.qaService = new QAService(events, settingsService);
   }
 
   /**
@@ -559,10 +562,49 @@ export class AutoModeService {
         );
       }
 
-      // Determine final status based on testing mode:
-      // - skipTests=false (automated testing): go directly to 'verified' (no manual verify needed)
+      // Determine final status based on testing mode and QA validation:
+      // - skipTests=false (automated testing): run QA validation, then decide
       // - skipTests=true (manual verification): go to 'waiting_approval' for manual review
-      const finalStatus = feature.skipTests ? 'waiting_approval' : 'verified';
+      let finalStatus: Feature['status'] = 'waiting_approval';
+
+      if (!feature.skipTests) {
+        // Run QA validation before deciding final status
+        try {
+          logger.info(`Running QA validation for feature ${featureId}`);
+          const qaResult = await this.qaService.validateFeature(
+            projectPath,
+            featureId,
+            feature,
+            workDir
+          );
+
+          if (qaResult.passed && qaResult.recommendation === 'approve') {
+            // All QA checks passed - auto-verify
+            finalStatus = 'verified';
+            logger.info(`QA validation passed for ${featureId}, auto-verifying`);
+
+            // Clear any previous error message
+            await this.updateFeatureError(projectPath, featureId, undefined);
+          } else {
+            // QA validation failed - send to manual review with QA report
+            finalStatus = 'waiting_approval';
+            logger.warn(`QA validation failed for ${featureId}: ${qaResult.summary}`);
+
+            // Store error message in feature for user visibility
+            await this.updateFeatureError(
+              projectPath,
+              featureId,
+              `QA validation: ${qaResult.summary}\n\nSuggestions:\n${qaResult.suggestions?.join('\n') || 'None'}`
+            );
+          }
+        } catch (qaError) {
+          // QA validation error - log but don't fail the feature
+          logger.error(`QA validation error for ${featureId}:`, qaError);
+          // Default to waiting_approval if QA fails
+          finalStatus = 'waiting_approval';
+        }
+      }
+
       await this.updateFeatureStatus(projectPath, featureId, finalStatus);
 
       // Mark snapshot as completed (successful execution)
@@ -572,6 +614,10 @@ export class AutoModeService {
       } catch (error) {
         logger.warn(`Failed to mark snapshot as completed for ${featureId}:`, error);
       }
+
+      logger.info(
+        `[AutoMode] Emitting feature_complete event: featureId=${featureId}, status=${finalStatus}, projectPath=${projectPath}`
+      );
 
       this.emitAutoModeEvent('auto_mode_feature_complete', {
         featureId,
@@ -1652,6 +1698,43 @@ Format your response as a structured markdown document.`;
   }
 
   /**
+   * Update the error field of a feature
+   */
+  private async updateFeatureError(
+    projectPath: string,
+    featureId: string,
+    error: string | undefined
+  ): Promise<void> {
+    const featureDir = getFeatureDir(projectPath, featureId);
+    const featurePath = path.join(featureDir, 'feature.json');
+
+    try {
+      const data = (await secureFs.readFile(featurePath, 'utf-8')) as string;
+      const parsed = JSON.parse(data);
+
+      if (!isFeature(parsed)) {
+        throw new Error(`Invalid feature data for ${featureId}: missing required fields`);
+      }
+
+      const feature = parsed;
+      feature.error = error;
+      feature.updatedAt = new Date().toISOString();
+      await secureFs.writeFile(featurePath, JSON.stringify(feature, null, 2));
+
+      // Emit event to notify frontend of error update
+      this.emitAutoModeEvent('feature_status_changed', {
+        featureId,
+        status: feature.status,
+        error,
+        updatedAt: feature.updatedAt,
+      });
+    } catch (writeError) {
+      logger.error(`Failed to update error for feature ${featureId}:`, writeError);
+      // Don't throw - this is not critical
+    }
+  }
+
+  /**
    * Update the planSpec of a feature
    */
   private async updateFeaturePlanSpec(
@@ -1659,7 +1742,13 @@ Format your response as a structured markdown document.`;
     featureId: string,
     updates: Partial<PlanSpec>
   ): Promise<void> {
-    const featurePath = path.join(projectPath, '.automakeit', 'features', featureId, 'feature.json');
+    const featurePath = path.join(
+      projectPath,
+      '.automakeit',
+      'features',
+      featureId,
+      'feature.json'
+    );
 
     try {
       const data = (await secureFs.readFile(featurePath, 'utf-8')) as string;

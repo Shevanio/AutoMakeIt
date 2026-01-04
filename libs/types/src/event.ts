@@ -27,6 +27,7 @@ export type EventType =
   | 'suggestions:event'
   | 'spec-regeneration:event'
   | 'issue-validation:event'
+  | 'qa-validation:event'
   | 'multi-agent:started'
   | 'multi-agent:agent-progress'
   | 'multi-agent:completed'

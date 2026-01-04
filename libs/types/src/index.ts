@@ -165,3 +165,19 @@ export type {
   MultiAgentProgressEvent,
 } from './multi-agent-spec.js';
 export { DEFAULT_AGENTS } from './multi-agent-spec.js';
+
+// QA Validation types
+export type {
+  QACheckSeverity,
+  QACheckCategory,
+  QACheck,
+  QAConfidence,
+  QARecommendation,
+  QAValidationResult,
+  StoredQAValidation,
+  QAValidationConfig,
+  QAValidationEvent,
+  QAValidationRequest,
+  QAValidationResponse,
+  QAValidationErrorResponse,
+} from './qa-validation.js';
