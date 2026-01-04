@@ -1,10 +1,10 @@
 # @automakeit/types
 
-Shared TypeScript type definitions for AutoMaker.
+Shared TypeScript type definitions for AutoMakeIt.
 
 ## Overview
 
-This package contains all core type definitions used across AutoMaker's server and UI components. It has no dependencies and serves as the foundation for other packages.
+This package contains all core type definitions used across AutoMakeIt's server and UI components. It has no dependencies and serves as the foundation for other packages.
 
 ## Installation
 

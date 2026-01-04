@@ -1,10 +1,10 @@
 # @automakeit/platform
 
-Platform-specific utilities for AutoMaker.
+Platform-specific utilities for AutoMakeIt.
 
 ## Overview
 
-This package provides platform-specific utilities including path management, subprocess handling, and security validation. It handles AutoMaker's directory structure and system operations.
+This package provides platform-specific utilities including path management, subprocess handling, and security validation. It handles AutoMakeIt's directory structure and system operations.
 
 ## Installation
 
@@ -16,7 +16,7 @@ npm install @automakeit/platform
 
 ### Path Management
 
-AutoMaker directory structure utilities.
+AutoMakeIt directory structure utilities.
 
 ```typescript
 import {
@@ -33,7 +33,7 @@ import {
   ensureAutoMakeItDir,
 } from '@automakeit/platform';
 
-// Get AutoMaker directory: /project/.automakeit
+// Get AutoMakeIt directory: /project/.automakeit
 const automakeitDir = getAutoMakeItDir('/project/path');
 
 // Get features directory: /project/.automakeit/features
@@ -126,7 +126,7 @@ async function executeFeature(projectPath: string, featureId: string) {
   // Validate project path
   const safePath = validatePath(projectPath);
 
-  // Ensure AutoMaker directory exists
+  // Ensure AutoMakeIt directory exists
   await ensureAutoMakeItDir(safePath);
 
   // Get feature directory
@@ -191,7 +191,7 @@ await secureFs.mkdir('/workspace/project/new-dir', { recursive: true });
 
 ## Directory Structure
 
-AutoMaker uses the following directory structure:
+AutoMakeIt uses the following directory structure:
 
 ```
 /project/

@@ -1,6 +1,6 @@
 /**
  * @automakeit/utils
- * Shared utility functions for AutoMaker
+ * Shared utility functions for AutoMakeIt
  */
 
 // Error handling

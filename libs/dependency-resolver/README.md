@@ -4,7 +4,7 @@ Feature dependency resolution using topological sorting.
 
 ## Overview
 
-This package provides dependency resolution for AutoMaker features using Kahn's algorithm with priority-aware ordering. It ensures features are executed in the correct order based on their dependencies.
+This package provides dependency resolution for AutoMakeIt features using Kahn's algorithm with priority-aware ordering. It ensures features are executed in the correct order based on their dependencies.
 
 ## Installation
 

@@ -48,7 +48,6 @@
 
 AutoMakeIt is an autonomous AI development studio that transforms how you build software. Instead of manually writing every line of code, you describe features on a Kanban board and watch as AI agents powered by Claude Agent SDK automatically implement them. Built with React, Vite, Electron, and Express, AutoMakeIt provides a complete workflow for managing AI agents through a desktop application (or web browser), with features like real-time streaming, git worktree isolation, plan approval, and multi-agent task execution.
 
-
 ## What Makes AutoMakeIt Different?
 
 Traditional development tools help you write code. AutoMakeIt helps you **orchestrate AI agents** to build entire features autonomously. Think of it as having a team of AI developers working for you—you define what needs to be built, and AutoMakeIt handles the implementation.
@@ -323,7 +322,7 @@ npm run test:all                 # Packages + server tests
 - E2E tests run on ports 3007 (UI) and 3008 (server)
 - Automatically starts test servers before running
 - Uses Chromium browser via Playwright
-- Mock agent mode available in CI with `AUTOMAKER_MOCK_AGENT=true`
+- Mock agent mode available in CI with `AUTOMAKEIT_MOCK_AGENT=true`
 
 ### Linting
 
@@ -346,7 +345,7 @@ npm run lint
 
 #### Optional - Security
 
-- `AUTOMAKER_API_KEY` - Optional API authentication for the server
+- `AUTOMAKEIT_API_KEY` - Optional API authentication for the server
 - `ALLOWED_ROOT_DIRECTORY` - Restrict file operations to specific directory
 - `CORS_ORIGIN` - CORS policy (default: \*)
 

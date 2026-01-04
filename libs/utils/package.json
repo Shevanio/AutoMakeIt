@@ -2,7 +2,7 @@
   "name": "@automakeit/utils",
   "version": "1.0.0",
   "type": "module",
-  "description": "Shared utility functions for AutoMaker",
+  "description": "Shared utility functions for AutoMakeIt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -15,7 +15,7 @@
     "automakeit",
     "utils"
   ],
-  "author": "AutoMaker Team",
+  "author": "Shevanio",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@automakeit/platform": "^1.0.0",

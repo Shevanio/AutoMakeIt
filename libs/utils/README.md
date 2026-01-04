@@ -1,10 +1,10 @@
 # @automakeit/utils
 
-Shared utility functions for AutoMaker.
+Shared utility functions for AutoMakeIt.
 
 ## Overview
 
-This package provides common utility functions used across AutoMaker's server and UI. It includes error handling, logging, conversation utilities, image handling, and prompt building.
+This package provides common utility functions used across AutoMakeIt's server and UI. It includes error handling, logging, conversation utilities, image handling, and prompt building.
 
 ## Installation
 

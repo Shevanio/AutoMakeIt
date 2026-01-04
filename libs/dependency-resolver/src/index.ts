@@ -1,6 +1,6 @@
 /**
  * @automakeit/dependency-resolver
- * Feature dependency resolution for AutoMaker
+ * Feature dependency resolution for AutoMakeIt
  */
 
 export {

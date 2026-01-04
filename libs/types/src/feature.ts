@@ -1,5 +1,5 @@
 /**
- * Feature types for AutoMaker feature management
+ * Feature types for AutoMakeIt feature management
  */
 
 import type { PlanningMode } from './settings.js';

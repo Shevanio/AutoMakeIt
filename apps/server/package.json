@@ -2,7 +2,7 @@
   "name": "@automakeit/server",
   "version": "0.1.0",
   "description": "Backend server for AutoMakeIt - provides API for both web and Electron modes",
-  "author": "AutoMaker Team",
+  "author": "Shevanio",
   "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "type": "module",

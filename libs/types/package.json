@@ -2,7 +2,7 @@
   "name": "@automakeit/types",
   "version": "1.0.0",
   "type": "module",
-  "description": "Shared type definitions for AutoMaker",
+  "description": "Shared type definitions for AutoMakeIt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,7 +13,7 @@
     "automakeit",
     "types"
   ],
-  "author": "AutoMaker Team",
+  "author": "Shevanio",
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "@types/node": "^22.10.5",

@@ -135,7 +135,7 @@ function getBaseOptions(): Partial<Options> {
     permissionMode: 'acceptEdits' as const,
     // CRITICAL: Pass process.env to ensure subprocess inherits correct PATH
     // This fixes "spawn node ENOENT" errors when using tsx/bun/etc
-    // See: https://github.com/AutoMaker-Org/automakeit/issues/XXX
+    // See: https://github.com/Shevanio/AutoMakeIt/issues/XXX
     env: process.env as Record<string, string | undefined>,
   };
 
@@ -314,7 +314,7 @@ export function createSpecGenerationOptions(config: CreateSdkOptionsConfig): Opt
     ...getBaseOptions(),
     // Override permissionMode - spec generation only needs read-only tools
     // Using "acceptEdits" can cause Claude to write files to unexpected locations
-    // See: https://github.com/AutoMaker-Org/automakeit/issues/149
+    // See: https://github.com/Shevanio/AutoMakeIt/issues/149
     permissionMode: 'default',
     model: getModelForUseCase('spec', config.model),
     maxTurns: MAX_TURNS.maximum,

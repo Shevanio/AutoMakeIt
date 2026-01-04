@@ -1,7 +1,7 @@
 {
   "name": "@automakeit/dependency-resolver",
   "version": "1.0.0",
-  "description": "Feature dependency resolution for AutoMaker",
+  "description": "Feature dependency resolution for AutoMakeIt",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,7 +23,7 @@
     "dependency",
     "resolver"
   ],
-  "author": "AutoMaker Team",
+  "author": "Shevanio",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@automakeit/types": "^1.0.0"

@@ -1,6 +1,6 @@
 # @automakeit/prompts
 
-AI prompt templates for text enhancement and other AI-powered features in AutoMaker.
+AI prompt templates for text enhancement and other AI-powered features in AutoMakeIt.
 
 ## Overview
 

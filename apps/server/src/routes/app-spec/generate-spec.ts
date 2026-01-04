@@ -205,7 +205,7 @@ ${getStructuredSpecPromptInstruction()}`;
   } else {
     // Fallback: Extract XML content from response text
     // Claude might include conversational text before/after
-    // See: https://github.com/AutoMaker-Org/automakeit/issues/149
+    // See: https://github.com/Shevanio/AutoMakeIt/issues/149
     logger.warn('⚠️ No structured output, falling back to text parsing');
     logger.info('========== FINAL RESPONSE TEXT ==========');
     logger.info(responseText || '(empty)');

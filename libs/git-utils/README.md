@@ -1,6 +1,6 @@
 # @automakeit/git-utils
 
-Git operations and utilities for AutoMaker.
+Git operations and utilities for AutoMakeIt.
 
 ## Overview
 

@@ -2,8 +2,12 @@
  * Model Configuration - Centralized model settings for the app
  *
  * Models can be overridden via environment variables:
- * - AUTOMAKER_MODEL_CHAT: Model for chat interactions
- * - AUTOMAKER_MODEL_DEFAULT: Fallback model for all operations
+ * - AUTOMAKEIT_MODEL_CHAT: Model for chat interactions
+ * - AUTOMAKEIT_MODEL_DEFAULT: Fallback model for all operations
+ *
+ * Legacy variables (deprecated in v2.1.0, will be removed in v3.0.0):
+ * - AUTOMAKER_MODEL_CHAT
+ * - AUTOMAKER_MODEL_DEFAULT
  */
 
 // Import shared model constants and types
@@ -18,8 +22,8 @@ export { CLAUDE_MODEL_MAP, DEFAULT_MODELS, resolveModelString };
  *
  * Priority:
  * 1. Explicit model parameter
- * 2. AUTOMAKER_MODEL_CHAT environment variable
- * 3. AUTOMAKER_MODEL_DEFAULT environment variable
+ * 2. AUTOMAKEIT_MODEL_CHAT environment variable (with fallback to legacy AUTOMAKER_MODEL_CHAT)
+ * 3. AUTOMAKEIT_MODEL_DEFAULT environment variable (with fallback to legacy AUTOMAKER_MODEL_DEFAULT)
  * 4. Default chat model
  */
 export function getChatModel(explicitModel?: string): string {
@@ -27,7 +31,12 @@ export function getChatModel(explicitModel?: string): string {
     return resolveModelString(explicitModel);
   }
 
-  const envModel = import.meta.env.AUTOMAKER_MODEL_CHAT || import.meta.env.AUTOMAKER_MODEL_DEFAULT;
+  // Support both new and legacy environment variables
+  const envModel =
+    import.meta.env.AUTOMAKEIT_MODEL_CHAT ||
+    import.meta.env.AUTOMAKER_MODEL_CHAT ||
+    import.meta.env.AUTOMAKEIT_MODEL_DEFAULT ||
+    import.meta.env.AUTOMAKER_MODEL_DEFAULT;
 
   if (envModel) {
     return resolveModelString(envModel);

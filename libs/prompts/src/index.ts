@@ -1,6 +1,6 @@
 /**
  * @automakeit/prompts
- * AI prompt templates for AutoMaker
+ * AI prompt templates for AutoMakeIt
  */
 
 // Enhancement prompts

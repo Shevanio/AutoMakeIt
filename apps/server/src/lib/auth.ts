@@ -94,9 +94,17 @@ loadSessions();
  */
 function ensureApiKey(): string {
   // First check environment variable (Electron passes it this way)
-  if (process.env.AUTOMAKER_API_KEY) {
+  // Support both new AUTOMAKEIT_* and legacy AUTOMAKER_* variables
+  const apiKey = process.env.AUTOMAKEIT_API_KEY || process.env.AUTOMAKER_API_KEY;
+
+  if (apiKey) {
+    if (process.env.AUTOMAKER_API_KEY && !process.env.AUTOMAKEIT_API_KEY) {
+      console.warn(
+        '[Auth] [DEPRECATED] AUTOMAKER_API_KEY is deprecated. Use AUTOMAKEIT_API_KEY instead.'
+      );
+    }
     console.log('[Auth] Using API key from environment variable');
-    return process.env.AUTOMAKER_API_KEY;
+    return apiKey;
   }
 
   // Try to read from file
@@ -128,7 +136,9 @@ function ensureApiKey(): string {
 const API_KEY = ensureApiKey();
 
 // Print API key to console for web mode users (unless suppressed for production logging)
-if (process.env.AUTOMAKER_HIDE_API_KEY !== 'true') {
+const hideApiKey =
+  process.env.AUTOMAKEIT_HIDE_API_KEY === 'true' || process.env.AUTOMAKER_HIDE_API_KEY === 'true';
+if (!hideApiKey) {
   console.log(`
 ╔═══════════════════════════════════════════════════════════════════════╗
 ║  🔐 API Key for Web Mode Authentication                               ║
@@ -142,7 +152,7 @@ if (process.env.AUTOMAKER_HIDE_API_KEY !== 'true') {
 ╚═══════════════════════════════════════════════════════════════════════╝
 `);
 } else {
-  console.log('[Auth] API key banner hidden (AUTOMAKER_HIDE_API_KEY=true)');
+  console.log('[Auth] API key banner hidden (AUTOMAKEIT_HIDE_API_KEY=true)');
 }
 
 /**

@@ -1,6 +1,6 @@
 /**
  * @automakeit/types
- * Shared type definitions for AutoMaker
+ * Shared type definitions for AutoMakeIt
  */
 
 // Provider types

@@ -2,7 +2,7 @@
   "name": "@automakeit/platform",
   "version": "1.0.0",
   "type": "module",
-  "description": "Platform-specific utilities for AutoMaker",
+  "description": "Platform-specific utilities for AutoMakeIt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -15,7 +15,7 @@
     "automakeit",
     "platform"
   ],
-  "author": "AutoMaker Team",
+  "author": "Shevanio",
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@automakeit/types": "^1.0.0",

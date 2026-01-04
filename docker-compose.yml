@@ -37,7 +37,8 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 
       # Optional - authentication, one will generate if left blank
-      - AUTOMAKER_API_KEY=${AUTOMAKER_API_KEY:-}
+      # Support both new and legacy variable names
+      - AUTOMAKEIT_API_KEY=${AUTOMAKEIT_API_KEY:-${AUTOMAKER_API_KEY:-}}
 
       # Optional - restrict to specific directory within container only
       # Projects and files can only be created/accessed within this directory

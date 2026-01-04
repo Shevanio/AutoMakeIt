@@ -31,6 +31,28 @@ export interface ServerConfig {
 }
 
 /**
+ * Get environment variable with fallback support
+ * Tries new AUTOMAKEIT_* variable first, then falls back to legacy AUTOMAKER_*
+ *
+ * @param newName - New variable name (AUTOMAKEIT_*)
+ * @param oldName - Legacy variable name (AUTOMAKER_*)
+ * @returns Variable value or undefined
+ */
+function getEnvWithFallback(newName: string, oldName: string): string | undefined {
+  const newValue = process.env[newName];
+  const oldValue = process.env[oldName];
+
+  // If using legacy variable, log deprecation warning once
+  if (!newValue && oldValue) {
+    console.warn(
+      `[DEPRECATED] ${oldName} is deprecated and will be removed in v3.0.0. Use ${newName} instead.`
+    );
+  }
+
+  return newValue || oldValue;
+}
+
+/**
  * Parse and validate environment variables
  * Provides defaults and type safety for all server configuration
  *
@@ -52,16 +74,19 @@ export function loadServerConfig(): ServerConfig {
 
     // Model overrides
     models: {
-      spec: process.env.AUTOMAKER_MODEL_SPEC,
-      features: process.env.AUTOMAKER_MODEL_FEATURES,
-      suggestions: process.env.AUTOMAKER_MODEL_SUGGESTIONS,
-      chat: process.env.AUTOMAKER_MODEL_CHAT,
-      auto: process.env.AUTOMAKER_MODEL_AUTO,
-      default: process.env.AUTOMAKER_MODEL_DEFAULT,
+      spec: getEnvWithFallback('AUTOMAKEIT_MODEL_SPEC', 'AUTOMAKER_MODEL_SPEC'),
+      features: getEnvWithFallback('AUTOMAKEIT_MODEL_FEATURES', 'AUTOMAKER_MODEL_FEATURES'),
+      suggestions: getEnvWithFallback(
+        'AUTOMAKEIT_MODEL_SUGGESTIONS',
+        'AUTOMAKER_MODEL_SUGGESTIONS'
+      ),
+      chat: getEnvWithFallback('AUTOMAKEIT_MODEL_CHAT', 'AUTOMAKER_MODEL_CHAT'),
+      auto: getEnvWithFallback('AUTOMAKEIT_MODEL_AUTO', 'AUTOMAKER_MODEL_AUTO'),
+      default: getEnvWithFallback('AUTOMAKEIT_MODEL_DEFAULT', 'AUTOMAKER_MODEL_DEFAULT'),
     },
 
     // Testing
-    mockAgent: process.env.AUTOMAKER_MOCK_AGENT === 'true',
+    mockAgent: getEnvWithFallback('AUTOMAKEIT_MOCK_AGENT', 'AUTOMAKER_MOCK_AGENT') === 'true',
   };
 }
 

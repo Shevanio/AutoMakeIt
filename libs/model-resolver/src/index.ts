@@ -1,6 +1,6 @@
 /**
  * @automakeit/model-resolver
- * Model resolution utilities for AutoMaker
+ * Model resolution utilities for AutoMakeIt
  */
 
 // Re-export constants from types

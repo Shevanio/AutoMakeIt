@@ -1,6 +1,6 @@
 /**
  * @automakeit/git-utils
- * Git operations utilities for AutoMaker
+ * Git operations utilities for AutoMakeIt
  */
 
 // Export types and constants

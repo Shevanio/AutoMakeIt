@@ -87,31 +87,31 @@ Before contributing to AutoMakeIt, ensure you have the following installed on yo
 ### Fork and Clone
 
 1. **Fork the repository** on GitHub
-   - Navigate to [https://github.com/AutoMaker-Org/automakeit](https://github.com/AutoMaker-Org/automakeit)
+   - Navigate to [https://github.com/Shevanio/AutoMakeIt](https://github.com/Shevanio/AutoMakeIt)
    - Click the "Fork" button in the top-right corner
    - This creates your own copy of the repository
 
 2. **Clone your fork locally**
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/automakeit.git
-   cd automakeit
+   git clone https://github.com/YOUR_USERNAME/AutoMakeIt.git
+   cd AutoMakeIt
    ```
 
 3. **Add the upstream remote** to keep your fork in sync
 
    ```bash
-   git remote add upstream https://github.com/AutoMaker-Org/automakeit.git
+   git remote add upstream https://github.com/Shevanio/AutoMakeIt.git
    ```
 
 4. **Verify remotes**
    ```bash
    git remote -v
    # Should show:
-   # origin    https://github.com/YOUR_USERNAME/automakeit.git (fetch)
-   # origin    https://github.com/YOUR_USERNAME/automakeit.git (push)
-   # upstream  https://github.com/AutoMaker-Org/automakeit.git (fetch)
-   # upstream  https://github.com/AutoMaker-Org/automakeit.git (push)
+   # origin    https://github.com/YOUR_USERNAME/AutoMakeIt.git (fetch)
+   # origin    https://github.com/YOUR_USERNAME/AutoMakeIt.git (push)
+   # upstream  https://github.com/Shevanio/AutoMakeIt.git (fetch)
+   # upstream  https://github.com/Shevanio/AutoMakeIt.git (push)
    ```
 
 ### Development Setup
@@ -314,7 +314,7 @@ git push origin feature/your-feature-name
 
 1. Go to your fork on GitHub
 2. Click "Compare & pull request" for your branch
-3. Ensure the base repository is `AutoMaker-Org/automakeit` and base branch is `main`
+3. Ensure the base repository is `Shevanio/AutoMakeIt` and base branch is `main`
 4. Fill out the PR template completely
 
 #### PR Requirements Checklist
@@ -510,12 +510,12 @@ AutoMakeIt uses **GitHub Actions** for continuous integration. Every pull reques
 
 The following checks must pass before your PR can be merged:
 
-| Check             | Description                                   |
-| ----------------- | --------------------------------------------- |
-| **Format**        | Verifies code is formatted with Prettier      |
-| **Build**         | Ensures the project compiles without errors   |
+| Check             | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| **Format**        | Verifies code is formatted with Prettier       |
+| **Build**         | Ensures the project compiles without errors    |
 | **Package Tests** | Runs tests for shared `@automakeit/*` packages |
-| **Server Tests**  | Runs server unit tests with coverage          |
+| **Server Tests**  | Runs server unit tests with coverage           |
 
 #### CI Testing Environment
 
@@ -523,7 +523,7 @@ For CI environments, AutoMakeIt supports a mock agent mode:
 
 ```bash
 # Enable mock agent mode for CI testing
-AUTOMAKER_MOCK_AGENT=true npm run test
+AUTOMAKEIT_MOCK_AGENT=true npm run test
 ```
 
 This allows tests to run without requiring a real Claude API connection.

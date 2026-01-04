@@ -1,6 +1,6 @@
 /**
  * @automakeit/platform
- * Platform-specific utilities for AutoMaker
+ * Platform-specific utilities for AutoMakeIt
  */
 
 // Path utilities
